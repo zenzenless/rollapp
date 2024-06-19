@@ -337,6 +337,8 @@ replace (
 	github.com/btcsuite/btcutil => github.com/btcsuite/btcd/btcutil v1.1.5
 	github.com/dymensionxyz/dymension => github.com/dymensionxyz/dymension/v3 v3.1.0
 	github.com/libp2p/go-libp2p-pubsub => github.com/libp2p/go-libp2p-pubsub v0.11.0
+	github.com/osmosis-labs/osmosis/v15 => github.com/osmosis-labs/osmosis/v15 v15.2.0
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/common => github.com/prometheus/common v0.42.0
+	github.com\celestiaorg\celestia-openrpc => github.com\celestiaorg\celestia-openrpc v0.3.0
 )
