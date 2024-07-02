@@ -38,6 +38,8 @@ import (
 	"github.com/dymensionxyz/dymint/mempool"
 	dymintnode "github.com/dymensionxyz/dymint/node"
 	dymintrpc "github.com/dymensionxyz/dymint/rpc"
+	ipfslog "github.com/ipfs/go-log/v2"
+	tmlog "github.com/tendermint/tendermint/libs/log"
 )
 
 const (
@@ -83,6 +85,25 @@ const (
 	flagGRPCWebAddress = "grpc-web.address"
 )
 
+type MyLogger struct {
+	Logger *ipfslog.ZapEventLogger
+}
+
+func (l MyLogger) Debug(msg string, keyvals ...interface{}) {
+	l.Logger.Debugw(msg, keyvals...)
+}
+func (l MyLogger) Info(msg string, keyvals ...interface{}) {
+	l.Logger.Infow(msg, keyvals...)
+}
+func (l MyLogger) Error(msg string, keyvals ...interface{}) {
+	l.Logger.Errorw(msg, keyvals...)
+}
+
+func (l MyLogger) With(keyvals ...interface{}) tmlog.Logger {
+	return l
+}
+
+// StartCmdOptions represents the options for the start command.
 // StartCmd runs the service passed in, either stand-alone or in-process with Dymint.
 func StartCmd(appCreator types.AppCreator, defaultNodeHome string) *cobra.Command {
 	cmd := &cobra.Command{
@@ -130,8 +151,8 @@ which accepts a path for the resulting pprof file.
 			}
 
 			/* ------------------------------ setup logging ----------------------------- */
-			log_path := serverCtx.Viper.GetString(rdklogger.FlagLogFile)
-			log_level := serverCtx.Viper.GetString(rdklogger.FlagLogLevel)
+			//log_path := serverCtx.Viper.GetString(rdklogger.FlagLogFile)
+			//log_level := serverCtx.Viper.GetString(rdklogger.FlagLogLevel)
 			maxLogSize, err := strconv.Atoi(serverCtx.Viper.GetString(rdklogger.FlagMaxLogSize))
 			if err != nil {
 				return err
@@ -139,7 +160,10 @@ which accepts a path for the resulting pprof file.
 			if maxLogSize <= 0 {
 				return fmt.Errorf("max log size <=0 not supported")
 			}
-			serverCtx.Logger = rdklogger.NewLogger(log_path, maxLogSize, log_level, map[string]string{})
+			logger := ipfslog.Logger("rollappd")
+			ipfslog.SetAllLoggers(ipfslog.LevelInfo)
+			myLogger := MyLogger{Logger: ipfslog.WithStacktrace(ipfslog.WithSkip(logger, 1), ipfslog.LevelError)}
+			serverCtx.Logger = myLogger
 
 			dymconfig := dymintconf.DefaultConfig("", "")
 			err = dymconfig.GetViperConfig(cmd, serverCtx.Viper.GetString(flags.FlagHome))
@@ -260,7 +284,6 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, nodeConfig *d
 	if err != nil {
 		return err
 	}
-
 	ctx.Logger.Info("starting node with ABCI dymint in-process")
 	tmNode, err := dymintnode.NewNode(
 		context.Background(),
