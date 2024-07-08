@@ -48,10 +48,13 @@ install:
 	@go install $(BUILD_FLAGS) -v -mod=readonly ./cmd/rollappd
 
 
-.PHONY: build
+.PHONY: build build-debug
 build: ## Compiles the rollapd binary
 	go build  -o build/rollappd $(BUILD_FLAGS) ./cmd/rollappd
 
+build-debug: go.sum
+	$(eval temp_ldflags := $(filter-out -w -s,$(ldflags)))
+	CGO_ENABLED=0 go build -tags "$(build_tags)" -ldflags '$(temp_ldflags)' -gcflags "all=-N -l" -o build/rollappd ./cmd/rollappd
 
 .PHONY: clean
 clean: ## Clean temporary files

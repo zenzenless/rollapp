@@ -152,7 +152,7 @@ which accepts a path for the resulting pprof file.
 
 			/* ------------------------------ setup logging ----------------------------- */
 			//log_path := serverCtx.Viper.GetString(rdklogger.FlagLogFile)
-			//log_level := serverCtx.Viper.GetString(rdklogger.FlagLogLevel)
+			log_level := serverCtx.Viper.GetString(rdklogger.FlagLogLevel)
 			maxLogSize, err := strconv.Atoi(serverCtx.Viper.GetString(rdklogger.FlagMaxLogSize))
 			if err != nil {
 				return err
@@ -161,7 +161,11 @@ which accepts a path for the resulting pprof file.
 				return fmt.Errorf("max log size <=0 not supported")
 			}
 			logger := ipfslog.Logger("rollappd")
-			ipfslog.SetAllLoggers(ipfslog.LevelInfo)
+			logv,err:=ipfslog.LevelFromString(log_level)
+			if err!=nil{
+				return err
+			}
+			ipfslog.SetAllLoggers(logv)
 			myLogger := MyLogger{Logger: ipfslog.WithStacktrace(ipfslog.WithSkip(logger, 1), ipfslog.LevelError)}
 			serverCtx.Logger = myLogger
 
